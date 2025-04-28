@@ -1,8 +1,9 @@
 
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Calendar, BookOpen, Pencil, Lightbulb, Gamepad,
   Star, Award, Edit, Home, Menu, LogIn, X
@@ -36,6 +37,8 @@ const NavItem = ({ icon, label, to, isActive, onClick }: NavItemProps) => {
 
 const DashboardSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const navItems = [
@@ -56,6 +59,15 @@ const DashboardSidebar = () => {
 
   const closeMobileSidebar = () => {
     setIsMobileSidebarOpen(false);
+  };
+  
+  const handleLogout = () => {
+    // In a real app with authentication, we would clear the auth state here
+    toast({
+      title: "Logged out successfully",
+      description: "You have been logged out of your account",
+    });
+    navigate("/");
   };
 
   return (
@@ -96,11 +108,13 @@ const DashboardSidebar = () => {
         </div>
 
         <div className="p-6 border-t border-kidz-light mt-4">
-          <Button asChild variant="outline" className="w-full border-kidz-primary hover:bg-kidz-light">
-            <Link to="/">
-              <LogIn className="mr-2 h-4 w-4" />
-              Sign Out
-            </Link>
+          <Button 
+            variant="outline" 
+            className="w-full border-kidz-primary hover:bg-kidz-light"
+            onClick={handleLogout}
+          >
+            <LogIn className="mr-2 h-4 w-4" />
+            Sign Out
           </Button>
         </div>
       </div>
@@ -142,11 +156,16 @@ const DashboardSidebar = () => {
             </div>
 
             <div className="p-6 border-t border-kidz-light mt-auto">
-              <Button asChild variant="outline" className="w-full border-kidz-primary hover:bg-kidz-light" onClick={closeMobileSidebar}>
-                <Link to="/">
-                  <LogIn className="mr-2 h-4 w-4" />
-                  Sign Out
-                </Link>
+              <Button 
+                variant="outline" 
+                className="w-full border-kidz-primary hover:bg-kidz-light"
+                onClick={() => {
+                  closeMobileSidebar();
+                  handleLogout();
+                }}
+              >
+                <LogIn className="mr-2 h-4 w-4" />
+                Sign Out
               </Button>
             </div>
           </div>
