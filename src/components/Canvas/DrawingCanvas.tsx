@@ -16,6 +16,7 @@ const DrawingCanvas = () => {
   useEffect(() => {
     if (!canvasRef.current) return;
 
+    // Create the fabric.js canvas with drawing mode enabled
     const canvas = new FabricCanvas(canvasRef.current, {
       isDrawingMode: true,
       width: 600,
@@ -23,28 +24,44 @@ const DrawingCanvas = () => {
       backgroundColor: "#ffffff",
     });
 
-    // In fabric.js v6, we need to ensure the freeDrawingBrush is initialized before accessing it
-    // Initialize the brush after the canvas is fully set up
-    requestAnimationFrame(() => {
+    // Initialize the brush properly after the canvas is fully loaded
+    setTimeout(() => {
       if (canvas.freeDrawingBrush) {
         canvas.freeDrawingBrush.color = "#000000";
-        canvas.freeDrawingBrush.width = 3;
+        canvas.freeDrawingBrush.width = 5;
       }
-    });
+    }, 100);
     
     setFabricCanvas(canvas);
 
-    // Initialize the image classifier
+    // Initialize the image classifier with WebGPU or WASM
     const initClassifier = async () => {
       try {
         const imageClassifier = await pipeline(
           "image-classification",
           "onnx-community/mobilenetv4_conv_small.e2400_r224_in1k",
-          { device: "cpu" }
+          { device: "wasm" } // Use WASM instead of CPU
         );
         setClassifier(imageClassifier);
+        console.log("Classifier initialized successfully");
       } catch (error) {
         console.error("Error initializing classifier:", error);
+        // Try alternative device if first attempt failed
+        try {
+          const imageClassifier = await pipeline(
+            "image-classification",
+            "onnx-community/mobilenetv4_conv_small.e2400_r224_in1k",
+            { device: "webgpu" }
+          );
+          setClassifier(imageClassifier);
+          console.log("Classifier initialized with WebGPU");
+        } catch (secondError) {
+          console.error("Failed to initialize classifier with alternate device:", secondError);
+          toast({
+            title: "Drawing recognition unavailable",
+            description: "The AI drawing recognition couldn't be loaded.",
+          });
+        }
       }
     };
 
@@ -53,13 +70,17 @@ const DrawingCanvas = () => {
     return () => {
       canvas.dispose();
     };
-  }, []);
+  }, [toast]);
 
   const handleClear = () => {
     if (!fabricCanvas) return;
     fabricCanvas.clear();
     fabricCanvas.backgroundColor = "#ffffff";
     fabricCanvas.renderAll();
+    toast({
+      title: "Canvas cleared",
+      description: "You can start drawing something new!",
+    });
   };
 
   const toggleEraser = () => {
@@ -67,25 +88,61 @@ const DrawingCanvas = () => {
     
     if (!isDrawing) {
       fabricCanvas.freeDrawingBrush.color = "#000000";
-      toast({ title: "Brush selected", description: "You can now draw!" });
+      fabricCanvas.freeDrawingBrush.width = 5;
+      toast({ 
+        title: "Brush selected", 
+        description: "You can now draw!" 
+      });
     } else {
       fabricCanvas.freeDrawingBrush.color = "#ffffff";
-      toast({ title: "Eraser selected", description: "You can now erase!" });
+      fabricCanvas.freeDrawingBrush.width = 20;
+      toast({ 
+        title: "Eraser selected", 
+        description: "You can now erase!" 
+      });
     }
     setIsDrawing(!isDrawing);
   };
 
   const guessDrawing = async () => {
-    if (!fabricCanvas || !classifier) return;
+    if (!fabricCanvas) {
+      toast({
+        title: "No drawing found",
+        description: "Please draw something first!",
+      });
+      return;
+    }
+    
+    if (!classifier) {
+      toast({
+        title: "AI not ready",
+        description: "The image recognition system is still loading. Please try again in a moment.",
+      });
+      return;
+    }
 
     try {
+      toast({
+        title: "Analyzing your drawing...",
+        description: "Let me see what you've created!",
+      });
+      
       const dataUrl = fabricCanvas.toDataURL();
       const result = await classifier(dataUrl);
       
       if (result && result.length > 0) {
+        const topResult = result[0];
+        const label = topResult.label.split(",")[0];
+        const confidence = Math.round(topResult.score * 100);
+        
         toast({
           title: "I think you drew...",
-          description: `${result[0].label.split(",")[0]} (${Math.round(result[0].score * 100)}% confident)`,
+          description: `${label} (${confidence}% confident)`,
+        });
+      } else {
+        toast({
+          title: "Hmm, I'm not sure",
+          description: "I couldn't recognize what you drew. Try drawing something clearer!",
         });
       }
     } catch (error) {
@@ -100,7 +157,7 @@ const DrawingCanvas = () => {
   return (
     <div className="flex flex-col items-center gap-6">
       <div className="border-2 border-kidz-primary rounded-lg overflow-hidden shadow-lg">
-        <canvas ref={canvasRef} className="max-w-full touch-none" />
+        <canvas ref={canvasRef} className="max-w-full touch-none cursor-crosshair" />
       </div>
 
       <div className="flex gap-4">
