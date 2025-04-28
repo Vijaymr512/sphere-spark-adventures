@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Canvas as FabricCanvas } from "fabric";
 import { Button } from "@/components/ui/button";
 import { pipeline } from "@huggingface/transformers";
-import { Brush, Eraser, Trash2 } from "lucide-react";
+import { Brush, Eraser, Trash2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const DrawingCanvas = () => {
@@ -11,6 +11,7 @@ const DrawingCanvas = () => {
   const [fabricCanvas, setFabricCanvas] = useState<FabricCanvas | null>(null);
   const [isDrawing, setIsDrawing] = useState(true);
   const [classifier, setClassifier] = useState<any>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -37,31 +38,50 @@ const DrawingCanvas = () => {
     // Initialize the image classifier with WebGPU or WASM
     const initClassifier = async () => {
       try {
-        const imageClassifier = await pipeline(
-          "image-classification",
-          "onnx-community/mobilenetv4_conv_small.e2400_r224_in1k",
-          { device: "wasm" } // Use WASM instead of CPU
-        );
-        setClassifier(imageClassifier);
-        console.log("Classifier initialized successfully");
-      } catch (error) {
-        console.error("Error initializing classifier:", error);
-        // Try alternative device if first attempt failed
+        toast({
+          title: "Loading AI model...",
+          description: "This might take a few moments",
+        });
+        
+        // Try WebGPU first
         try {
+          console.log("Initializing classifier with WebGPU...");
           const imageClassifier = await pipeline(
             "image-classification",
             "onnx-community/mobilenetv4_conv_small.e2400_r224_in1k",
             { device: "webgpu" }
           );
           setClassifier(imageClassifier);
-          console.log("Classifier initialized with WebGPU");
-        } catch (secondError) {
-          console.error("Failed to initialize classifier with alternate device:", secondError);
+          console.log("Classifier initialized successfully with WebGPU");
           toast({
-            title: "Drawing recognition unavailable",
-            description: "The AI drawing recognition couldn't be loaded.",
+            title: "AI drawing recognition ready!",
+            description: "Using WebGPU for fast processing.",
           });
+          return;
+        } catch (webgpuError) {
+          console.warn("WebGPU not available, falling back to WASM", webgpuError);
         }
+        
+        // Fallback to WASM
+        console.log("Initializing classifier with WASM...");
+        const imageClassifier = await pipeline(
+          "image-classification",
+          "onnx-community/mobilenetv4_conv_small.e2400_r224_in1k",
+          { device: "wasm" }
+        );
+        setClassifier(imageClassifier);
+        console.log("Classifier initialized successfully with WASM");
+        toast({
+          title: "AI drawing recognition ready!",
+          description: "Using WASM for compatibility.",
+        });
+      } catch (error) {
+        console.error("Error initializing classifier:", error);
+        toast({
+          title: "Drawing recognition unavailable",
+          description: "The AI drawing recognition couldn't be loaded.",
+          variant: "destructive"
+        });
       }
     };
 
@@ -122,13 +142,21 @@ const DrawingCanvas = () => {
     }
 
     try {
+      setIsProcessing(true);
       toast({
         title: "Analyzing your drawing...",
         description: "Let me see what you've created!",
       });
       
-      const dataUrl = fabricCanvas.toDataURL();
+      const dataUrl = fabricCanvas.toDataURL({
+        format: 'png',
+        quality: 1
+      });
+      
+      // Make sure we're passing a string URL, not an object
       const result = await classifier(dataUrl);
+      
+      setIsProcessing(false);
       
       if (result && result.length > 0) {
         const topResult = result[0];
@@ -146,10 +174,12 @@ const DrawingCanvas = () => {
         });
       }
     } catch (error) {
+      setIsProcessing(false);
       console.error("Error classifying image:", error);
       toast({
         title: "Oops!",
         description: "I couldn't recognize your drawing. Try drawing something else!",
+        variant: "destructive"
       });
     }
   };
@@ -181,10 +211,22 @@ const DrawingCanvas = () => {
 
         <Button
           onClick={guessDrawing}
+          disabled={isProcessing || !classifier}
           className="bg-kidz-primary hover:bg-kidz-dark text-black"
         >
-          Guess My Drawing!
+          {isProcessing ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin mr-2" />
+              Analyzing...
+            </>
+          ) : (
+            "Guess My Drawing!"
+          )}
         </Button>
+      </div>
+      
+      <div className="mt-2 text-sm text-gray-500 max-w-lg text-center">
+        <p>Draw clear, simple objects for best recognition. The AI works best with basic shapes like animals, vehicles, or common objects.</p>
       </div>
     </div>
   );
