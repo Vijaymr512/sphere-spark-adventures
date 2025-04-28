@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
+import DrawingCanvas from "@/components/Canvas/DrawingCanvas";
 
 const DrawingPrompts = () => {
   const { toast } = useToast();
@@ -54,7 +54,7 @@ const DrawingPrompts = () => {
               <p className="text-2xl font-medium text-center">{currentPrompt}</p>
             </div>
             
-            <div className="text-center">
+            <div className="text-center mb-8">
               <Button 
                 onClick={generateNewPrompt}
                 className="px-8 py-6 text-lg bg-kidz-secondary hover:bg-kidz-accent"
@@ -62,14 +62,16 @@ const DrawingPrompts = () => {
                 Generate New Drawing Idea
               </Button>
             </div>
+
+            <DrawingCanvas />
             
             <div className="mt-8 bg-white p-4 rounded-lg border border-gray-200">
               <h4 className="font-bold mb-2">Drawing Tips:</h4>
               <ul className="list-disc pl-5 space-y-1 text-gray-700">
                 <li>Start with basic shapes and add details later</li>
                 <li>Don't worry about making mistakes - they can become part of your art!</li>
-                <li>Use bright colors to make your drawing pop</li>
-                <li>Try different materials like crayons, markers, or colored pencils</li>
+                <li>Use the eraser tool to fix any mistakes</li>
+                <li>Click "Guess My Drawing" when you're done to see if AI can recognize it!</li>
               </ul>
             </div>
           </div>
