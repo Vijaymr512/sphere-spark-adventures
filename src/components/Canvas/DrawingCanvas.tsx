@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useState } from "react";
-import { Canvas as FabricCanvas, Circle, Path } from "fabric";
+import { Canvas as FabricCanvas } from "fabric";
 import { Button } from "@/components/ui/button";
 import { pipeline } from "@huggingface/transformers";
 import { Brush, Eraser, Trash2 } from "lucide-react";
