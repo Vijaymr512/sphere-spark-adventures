@@ -23,8 +23,15 @@ const DrawingCanvas = () => {
       backgroundColor: "#ffffff",
     });
 
-    canvas.freeDrawingBrush.color = "#000000";
-    canvas.freeDrawingBrush.width = 3;
+    // In fabric.js v6, we need to ensure the freeDrawingBrush is initialized before accessing it
+    // Initialize the brush after the canvas is fully set up
+    requestAnimationFrame(() => {
+      if (canvas.freeDrawingBrush) {
+        canvas.freeDrawingBrush.color = "#000000";
+        canvas.freeDrawingBrush.width = 3;
+      }
+    });
+    
     setFabricCanvas(canvas);
 
     // Initialize the image classifier
@@ -56,7 +63,7 @@ const DrawingCanvas = () => {
   };
 
   const toggleEraser = () => {
-    if (!fabricCanvas) return;
+    if (!fabricCanvas || !fabricCanvas.freeDrawingBrush) return;
     
     if (!isDrawing) {
       fabricCanvas.freeDrawingBrush.color = "#000000";
