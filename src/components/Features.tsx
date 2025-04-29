@@ -1,53 +1,80 @@
 
 import { 
   BookOpen, Calendar, Star, Lightbulb, 
-  Gamepad, Award, Pencil, Edit 
+  Gamepad, Award, Edit, Moon 
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+// Mock authentication check - replace with actual auth when integrated with Supabase
+const useAuth = () => {
+  // Check if user is logged in (e.g., by checking localStorage)
+  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  return { isLoggedIn };
+};
 
 const features = [
   {
     icon: <Calendar className="h-8 w-8 text-kidz-primary" />,
     title: "Daily Activities",
-    description: "Fun, age-appropriate activity suggestions every day to keep children engaged."
+    description: "Fun, age-appropriate activity suggestions every day to keep children engaged.",
+    path: "/dashboard/daily-activities"
   },
   {
-    icon: <Pencil className="h-8 w-8 text-kidz-primary" />,
-    title: "Creative Drawing",
-    description: "Imaginative prompts to inspire artistic expression and creativity."
+    icon: <Moon className="h-8 w-8 text-kidz-primary" />,
+    title: "Bedtime Story Mixer",
+    description: "Mix characters, places, and objects to create unique bedtime stories.",
+    path: "/dashboard/bedtime-stories"
   },
   {
     icon: <BookOpen className="h-8 w-8 text-kidz-primary" />,
     title: "Story Time",
-    description: "Magical, interactive stories that spark imagination and joy."
+    description: "Magical, interactive stories that spark imagination and joy.",
+    path: "/dashboard/stories"
   },
   {
     icon: <Lightbulb className="h-8 w-8 text-kidz-primary" />,
     title: "Brain Games",
-    description: "Puzzles and quizzes that make learning fun while developing critical thinking."
+    description: "Puzzles and quizzes that make learning fun while developing critical thinking.",
+    path: "/dashboard/games"
   },
   {
     icon: <Gamepad className="h-8 w-8 text-kidz-primary" />,
     title: "Offline Games",
-    description: "Ideas for screen-free play that encourage physical activity and social skills."
+    description: "Ideas for screen-free play that encourage physical activity and social skills.",
+    path: "/dashboard/offline-games"
   },
   {
     icon: <Star className="h-8 w-8 text-kidz-primary" />,
     title: "Roleplay Adventures",
-    description: "Interactive storytelling that puts kids in charge of exciting adventures."
+    description: "Interactive storytelling that puts kids in charge of exciting adventures.",
+    path: "/dashboard/adventures"
   },
   {
     icon: <Award className="h-8 w-8 text-kidz-primary" />,
     title: "DIY Projects",
-    description: "Simple science experiments and crafts using everyday household items."
+    description: "Simple science experiments and crafts using everyday household items.",
+    path: "/dashboard/projects"
   },
   {
     icon: <Edit className="h-8 w-8 text-kidz-primary" />,
     title: "ABC & 123",
-    description: "Engaging literacy and numeracy activities for early learners."
+    description: "Engaging literacy and numeracy activities for early learners.",
+    path: "/dashboard/early-learning"
   },
 ];
 
 const Features = () => {
+  const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
+  
+  const handleFeatureClick = (path: string) => {
+    if (!isLoggedIn) {
+      navigate("/signin");
+    } else {
+      navigate(path);
+    }
+  };
+  
   return (
     <section className="py-20 bg-white" id="features">
       <div className="kidz-container">
@@ -64,7 +91,8 @@ const Features = () => {
           {features.map((feature, index) => (
             <div 
               key={index} 
-              className="kidz-card hover:border-kidz-primary group"
+              className="kidz-card hover:border-kidz-primary group cursor-pointer"
+              onClick={() => handleFeatureClick(feature.path)}
             >
               <div className="bg-kidz-light rounded-full p-4 inline-block mb-4 group-hover:bg-kidz-primary transition-colors duration-300">
                 {feature.icon}

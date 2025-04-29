@@ -1,13 +1,16 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useToast } from "@/hooks/use-toast";
 
 const SignIn = () => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -20,10 +23,33 @@ const SignIn = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // This will be connected to Supabase later
-    console.log("Form submitted:", formData);
-    // For now, let's simulate a successful sign in by redirecting to dashboard
-    window.location.href = '/dashboard';
+    
+    // For demo purposes, we'll accept any credentials
+    // In a real app, this would connect to Supabase auth
+    
+    // Store login record
+    const loginRecord = {
+      email: formData.email,
+      timestamp: new Date().toISOString(),
+      device: navigator.userAgent
+    };
+    
+    // Save to localStorage (temporary solution until Supabase integration)
+    const loginRecords = JSON.parse(localStorage.getItem("loginRecords") || "[]");
+    loginRecords.push(loginRecord);
+    localStorage.setItem("loginRecords", JSON.stringify(loginRecords));
+    
+    // Set login status
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("currentUser", formData.email);
+    
+    toast({
+      title: "Sign in successful!",
+      description: "Welcome to KidzSphere!"
+    });
+    
+    // Redirect to dashboard
+    navigate('/dashboard');
   };
 
   return (

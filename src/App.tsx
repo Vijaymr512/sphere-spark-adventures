@@ -12,7 +12,7 @@ import NotFound from "./pages/NotFound";
 import Features from "./pages/Features";
 import About from "./pages/About";
 import DailyActivities from "./pages/DailyActivities";
-import DrawingPrompts from "./pages/DrawingPrompts";
+import BedtimeStories from "./pages/BedtimeStories";
 import Stories from "./pages/Stories";
 import Games from "./pages/Games";
 import OfflineGames from "./pages/OfflineGames";
@@ -36,7 +36,7 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/daily-activities" element={<DailyActivities />} />
-          <Route path="/dashboard/drawing-prompts" element={<DrawingPrompts />} />
+          <Route path="/dashboard/bedtime-stories" element={<BedtimeStories />} />
           <Route path="/dashboard/stories" element={<Stories />} />
           <Route path="/dashboard/games" element={<Games />} />
           <Route path="/dashboard/offline-games" element={<OfflineGames />} />

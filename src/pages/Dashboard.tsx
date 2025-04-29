@@ -1,19 +1,32 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import ActivityCard from "@/components/ActivityCard";
 import { Button } from "@/components/ui/button";
 import { 
-  Calendar, BookOpen, Pencil, Lightbulb, Gamepad,
-  Star, Award, Edit, Check  
+  Calendar, BookOpen, Lightbulb, Gamepad,
+  Star, Award, Edit, Check, Moon
 } from "lucide-react";
 
 const Dashboard = () => {
   const { toast } = useToast();
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
   const [dailyActivity] = useState("Make a paper boat and test it in water today!");
-  const [drawingPrompt] = useState("Can you draw a dragon that lives in a forest made of candy?");
+  const [drawingPrompt] = useState("Mix a unicorn, castle and magic wand to create a bedtime story!");
+  const [loginRecords, setLoginRecords] = useState<any[]>([]);
+  const [currentUser, setCurrentUser] = useState<string>("");
+  
+  // Load login records when component mounts
+  useEffect(() => {
+    // Get current user
+    const user = localStorage.getItem("currentUser") || "";
+    setCurrentUser(user);
+    
+    // Get login records
+    const records = JSON.parse(localStorage.getItem("loginRecords") || "[]");
+    setLoginRecords(records);
+  }, []);
   
   const activities = [
     {
@@ -24,11 +37,11 @@ const Dashboard = () => {
       link: "/dashboard/daily-activities"
     },
     {
-      icon: <Pencil className="h-6 w-6 text-kidz-dark" />,
-      title: "Drawing Prompts",
-      description: "Unleash your creativity with fun drawing challenges and ideas.",
+      icon: <Moon className="h-6 w-6 text-kidz-dark" />,
+      title: "Bedtime Story Mixer",
+      description: "Create unique bedtime stories by mixing characters, places, and objects!",
       color: "bg-gradient-to-br from-white to-amber-50",
-      link: "/dashboard/drawing-prompts"
+      link: "/dashboard/bedtime-stories"
     },
     {
       icon: <BookOpen className="h-6 w-6 text-kidz-dark" />,
@@ -86,8 +99,8 @@ const Dashboard = () => {
 
   const generateNewPrompt = () => {
     toast({
-      title: "New drawing idea generated! 🎨",
-      description: "Try drawing this new creation!",
+      title: "Let's create a story! 📚",
+      description: "Head to the Bedtime Story Mixer to create your own tale!",
     });
   };
 
@@ -98,7 +111,7 @@ const Dashboard = () => {
       <main className="flex-1 p-4 lg:p-8 pt-16 lg:pt-8">
         <div className="kidz-container">
           <header className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Welcome to KidzSphere!</h1>
+            <h1 className="text-3xl font-bold mb-2">Welcome to KidzSphere{currentUser ? `, ${currentUser}` : ''}!</h1>
             <p className="text-gray-600">Ready for today's fun adventures?</p>
           </header>
 
@@ -133,13 +146,13 @@ const Dashboard = () => {
                 </Button>
               </div>
               
-              {/* Drawing Prompt Card */}
+              {/* Bedtime Story Card */}
               <div className="kidz-card border-kidz-secondary">
                 <div className="flex items-center mb-4">
                   <div className="bg-kidz-light p-3 rounded-full">
-                    <Pencil className="h-6 w-6 text-kidz-dark" />
+                    <Moon className="h-6 w-6 text-kidz-dark" />
                   </div>
-                  <h3 className="text-xl font-bold ml-3">Drawing Idea</h3>
+                  <h3 className="text-xl font-bold ml-3">Bedtime Story Idea</h3>
                 </div>
                 
                 <div className="bg-kidz-light/50 rounded-lg p-4 mb-4 border border-kidz-light">
@@ -150,11 +163,40 @@ const Dashboard = () => {
                   onClick={generateNewPrompt}
                   className="w-full bg-kidz-secondary hover:bg-kidz-accent"
                 >
-                  Generate New Idea
+                  Create a Story
                 </Button>
               </div>
             </div>
           </section>
+
+          {/* Login Records Section */}
+          {loginRecords.length > 0 && (
+            <section className="mb-10">
+              <h2 className="text-2xl font-bold mb-4">Recent Logins</h2>
+              <div className="kidz-card">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2 px-4">Email</th>
+                        <th className="text-left py-2 px-4">Date & Time</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {loginRecords.slice(-5).reverse().map((record, index) => (
+                        <tr key={index} className="border-b">
+                          <td className="py-2 px-4">{record.email}</td>
+                          <td className="py-2 px-4">
+                            {new Date(record.timestamp).toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          )}
 
           <section>
             <h2 className="text-2xl font-bold mb-6">Explore Activities</h2>

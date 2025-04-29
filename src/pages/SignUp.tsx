@@ -1,13 +1,16 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useToast } from "@/hooks/use-toast";
 
 const SignUp = () => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
     email: "",
@@ -22,10 +25,44 @@ const SignUp = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // This will be connected to Supabase later
-    console.log("Form submitted:", formData);
-    // For now, let's simulate a successful sign up by redirecting to dashboard
-    window.location.href = '/dashboard';
+    
+    // Password validation
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords don't match",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // For demo purposes, we'll accept any valid form submission
+    // In a real app, this would connect to Supabase auth
+    
+    // Store sign up record
+    const signUpRecord = {
+      name: formData.firstName,
+      email: formData.email,
+      timestamp: new Date().toISOString(),
+      device: navigator.userAgent
+    };
+    
+    // Save to localStorage (temporary solution until Supabase integration)
+    const userRecords = JSON.parse(localStorage.getItem("userRecords") || "[]");
+    userRecords.push(signUpRecord);
+    localStorage.setItem("userRecords", JSON.stringify(userRecords));
+    
+    // Set login status
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("currentUser", formData.email);
+    
+    toast({
+      title: "Account created!",
+      description: "Welcome to KidzSphere!"
+    });
+    
+    // Redirect to dashboard
+    navigate('/dashboard');
   };
 
   return (
