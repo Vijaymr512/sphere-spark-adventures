@@ -19,26 +19,104 @@ const TextToImage = () => {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [hasTypo, setHasTypo] = useState(false);
 
+  // Dictionary to map keywords to specific image categories
+  const imageCategories: Record<string, string> = {
+    // Fruits
+    "apple": "fruit/apple",
+    "banana": "fruit/banana",
+    "orange": "fruit/orange",
+    "mango": "fruit/mango",
+    "strawberry": "fruit/strawberry",
+    "grape": "fruit/grapes",
+    "watermelon": "fruit/watermelon",
+    "pineapple": "fruit/pineapple",
+    "peach": "fruit/peach",
+    "pear": "fruit/pear",
+    "kiwi": "fruit/kiwi",
+    
+    // Animals
+    "cat": "animal/cat",
+    "dog": "animal/dog",
+    "elephant": "animal/elephant",
+    "lion": "animal/lion",
+    "tiger": "animal/tiger",
+    "zebra": "animal/zebra",
+    "giraffe": "animal/giraffe",
+    "monkey": "animal/monkey",
+    "bear": "animal/bear",
+    "rabbit": "animal/rabbit",
+    "bird": "animal/bird",
+    "fish": "animal/fish",
+    
+    // Objects
+    "car": "object/car",
+    "bike": "object/bicycle",
+    "laptop": "object/laptop",
+    "phone": "object/smartphone",
+    "chair": "object/chair",
+    "table": "object/table",
+    "book": "object/book",
+    "pen": "object/pen",
+    "pencil": "object/pencil",
+    "house": "object/house",
+    "tree": "object/tree",
+    "flower": "object/flower",
+  };
+
+  // Mock dictionary for spell checking and suggestions - expanded with more terms
+  const dictionary: Record<string, string[]> = {
+    // Fruit misspellings
+    "aple": ["apple", "maple"],
+    "banan": ["banana", "bananas"],
+    "mago": ["mango", "magic", "mayo"],
+    "ornge": ["orange", "arrange"],
+    "grap": ["grape", "grasp", "graph"],
+    "strwbery": ["strawberry", "strawberries"],
+    "pech": ["peach", "preach", "perch"],
+    "kiwifruit": ["kiwi", "kiwifruit", "fruit"],
+    "pinepple": ["pineapple", "pine", "purple"],
+    
+    // Animal misspellings
+    "kat": ["cat", "kit", "kite"],
+    "dogg": ["dog", "doge", "dodge"],
+    "elefant": ["elephant", "elegant", "element"],
+    "tigr": ["tiger", "tight", "tire"],
+    "loin": ["lion", "loin", "line"],
+    "zebr": ["zebra", "fiber", "saber"],
+    "beear": ["bear", "beer", "beard"],
+    "monky": ["monkey", "monks", "money"],
+    "giraf": ["giraffe", "graph", "graft"],
+    "rabit": ["rabbit", "rabid", "habit"],
+    
+    // Object misspellings
+    "labtop": ["laptop", "lab top", "tabletop"],
+    "phon": ["phone", "phony", "prone"],
+    "carr": ["car", "care", "cart"],
+    "byke": ["bike", "bake", "byte"],
+    "chare": ["chair", "charm", "chase"],
+    "tabel": ["table", "label", "tablet"],
+    "boook": ["book", "brook", "booth"],
+    "pensil": ["pencil", "pensile", "stencil"],
+    "flawer": ["flower", "flawed", "flayer"],
+    "hous": ["house", "hours", "mouse"],
+    "tre": ["tree", "true", "trek"],
+    
+    // Additional common misspellings
+    "iland": ["island", "inland", "ireland"],
+    "juise": ["juice", "juicy", "june"],
+    "mountan": ["mountain", "maintain", "fountain"],
+    "ocen": ["ocean", "open", "omen"],
+    "plantt": ["plant", "planet", "plenty"],
+    "rivr": ["river", "rival", "rivet"],
+    "staar": ["star", "stare", "stair"],
+    "flyd": ["fly", "fled", "flood"],
+  };
+
   // Mock dictionary to check for inappropriate content
   const inappropriateTerms = [
     "weapon", "gun", "knife", "violence", "crime", "illegal", "drugs", "murder", 
     "adult", "explicit", "terror", "kill", "harm", "dangerous", "inappropriate"
   ];
-
-  // Mock dictionary for spell checking and suggestions
-  const dictionary: Record<string, string[]> = {
-    "aple": ["apple", "maple", "apply"],
-    "banan": ["banana", "bananas", "banal"],
-    "carret": ["carrot", "caret", "carpet"],
-    "kat": ["cat", "kit", "kite"],
-    "dogg": ["dog", "doge", "dodge"],
-    "elefant": ["elephant", "elegant", "element"],
-    "flawer": ["flower", "flawed", "flayer"],
-    "hors": ["horse", "hours", "house"],
-    "iland": ["island", "inland", "ireland"],
-    "juise": ["juice", "juicy", "june"],
-    // Add more common misspellings children might make
-  };
 
   const checkForInappropriate = (text: string): boolean => {
     const lowerText = text.toLowerCase();
@@ -46,19 +124,39 @@ const TextToImage = () => {
   };
 
   const checkForTypos = (text: string): string[] => {
-    // Basic implementation - check if the exact word is in our dictionary
     const words = text.toLowerCase().split(" ");
-    let hasSuggestion = false;
+    let suggestions: string[] = [];
     
+    // Check if any word in the input matches our dictionary of misspellings
     for (const word of words) {
       if (dictionary[word]) {
         setHasTypo(true);
         return dictionary[word];
       }
+      
+      // Check for partial matches or close words
+      const closeMatches = Object.keys(dictionary).filter(dictWord => 
+        dictWord.includes(word) || word.includes(dictWord)
+      );
+      
+      if (closeMatches.length > 0) {
+        // Get suggestions for the first close match
+        if (dictionary[closeMatches[0]]) {
+          setHasTypo(true);
+          return dictionary[closeMatches[0]];
+        }
+      }
+    }
+    
+    // If we don't find any typos, check if the word exists in our categories
+    if (!words.some(word => imageCategories[word.toLowerCase()])) {
+      // If word doesn't exist in our categories, suggest some common words
+      setHasTypo(true);
+      return Object.keys(imageCategories).slice(0, 4);
     }
     
     setHasTypo(false);
-    return [];
+    return suggestions;
   };
 
   const generateImage = (inputText: string) => {
@@ -76,18 +174,32 @@ const TextToImage = () => {
       return;
     }
     
-    // Mock image generation (in a real app, this would call an API)
+    // Helper function to get a more accurate image for the input text
+    const getImageUrl = (text: string) => {
+      const cleanText = text.toLowerCase().trim();
+      const words = cleanText.split(" ");
+      
+      // Check if any word in the input matches our categories
+      for (const word of words) {
+        if (imageCategories[word]) {
+          // We found a match in our categories
+          const category = imageCategories[word];
+          const categoryType = category.split("/")[0];
+          const item = category.split("/")[1];
+          
+          // Return specific image based on category
+          return `https://source.unsplash.com/featured/?${item},${categoryType}`;
+        }
+      }
+      
+      // If no specific category is found, use the full text as search term
+      return `https://source.unsplash.com/featured/?${cleanText}`;
+    };
+    
+    // Mock image generation with more accurate unsplash search
     setTimeout(() => {
-      // For the demo, we'll use placeholder images based on the input text
-      const placeholders = [
-        "photo-1582562124811-c09040d0a901", // cat
-        "photo-1618160702438-9b02ab6515c9", // fruit
-        "photo-1506744038136-46273834b3fb", // nature
-        "photo-1465146344425-f00d5f5c8f07", // flowers
-      ];
-
-      const randomIndex = Math.floor(Math.random() * placeholders.length);
-      setGeneratedImage(`https://images.unsplash.com/${placeholders[randomIndex]}?w=500&h=500&fit=crop&q=80`);
+      const imageUrl = getImageUrl(inputText);
+      setGeneratedImage(`${imageUrl}&w=500&h=500&fit=crop&q=80`);
       
       toast({
         title: "Image Generated!",
@@ -150,7 +262,7 @@ const TextToImage = () => {
                     id="prompt"
                     value={prompt}
                     onChange={handleInputChange}
-                    placeholder="Type something like 'a happy cat' or 'an apple tree'"
+                    placeholder="Type something like 'cat' or 'apple'"
                     className="text-base"
                   />
                   <Button 
@@ -228,10 +340,10 @@ const TextToImage = () => {
               Tips for Great Images
             </h3>
             <ul className="list-disc pl-5 space-y-1 text-blue-600">
+              <li>Try simple words like "apple", "dog", or "car"</li>
               <li>Be specific about what you want to see</li>
-              <li>Try adding colors like "red balloon" or "blue sky"</li>
-              <li>Include details like "a cat playing with yarn"</li>
-              <li>Keep your descriptions child-friendly</li>
+              <li>Add colors like "red balloon" or "blue sky"</li>
+              <li>If you see suggestions, try clicking on them!</li>
             </ul>
           </div>
         </div>
