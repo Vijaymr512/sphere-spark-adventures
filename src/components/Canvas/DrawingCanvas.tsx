@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { Canvas as FabricCanvas } from "fabric";
 import { Button } from "@/components/ui/button";
@@ -150,10 +149,10 @@ const DrawingCanvas = () => {
       
       const dataUrl = fabricCanvas.toDataURL({
         format: 'png',
-        quality: 1
+        quality: 1,
+        multiplier: 1
       });
       
-      // Make sure we're passing a string URL, not an object
       const result = await classifier(dataUrl);
       
       setIsProcessing(false);

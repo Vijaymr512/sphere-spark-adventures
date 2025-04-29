@@ -4,7 +4,7 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Moon, Star, MapPin, Sparkles } from "lucide-react";
+import { Moon, Star, MapPin, Sparkles, BookOpen } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const characters = [
