@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -15,41 +14,51 @@ const SignIn = () => {
     email: "",
     password: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // For demo purposes, we'll accept any credentials
-    // In a real app, this would connect to Supabase auth
-    
-    // Store login record
-    const loginRecord = {
-      email: formData.email,
-      timestamp: new Date().toISOString(),
-      device: navigator.userAgent
-    };
-    
-    // Save to localStorage (temporary solution until Supabase integration)
-    const loginRecords = JSON.parse(localStorage.getItem("loginRecords") || "[]");
-    loginRecords.push(loginRecord);
-    localStorage.setItem("loginRecords", JSON.stringify(loginRecords));
-    
-    // Set login status
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("currentUser", formData.email);
-    
-    toast({
-      title: "Sign in successful!",
-      description: "Welcome to KidzSphere!"
-    });
-    
-    // Redirect to dashboard
-    navigate('/dashboard');
+    setIsSubmitting(true);
+
+    // Simulate authentication delay
+    setTimeout(() => {
+      setIsSubmitting(false);
+
+      // Simple validation
+      if (!formData.email || !formData.password) {
+        toast({
+          title: "Error",
+          description: "Please fill in all fields",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Store the email in localStorage for use in notifications
+      localStorage.setItem("userEmail", formData.email);
+      
+      // Store current user (just the name part of the email)
+      const username = formData.email.split('@')[0];
+      localStorage.setItem("currentUser", username);
+
+      // Record login for analytics
+      const timestamp = new Date().toISOString();
+      const loginRecord = { email: formData.email, timestamp };
+      const records = JSON.parse(localStorage.getItem("loginRecords") || "[]");
+      records.push(loginRecord);
+      localStorage.setItem("loginRecords", JSON.stringify(records));
+
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully signed in",
+      });
+      navigate("/dashboard");
+    }, 1500);
   };
 
   return (
@@ -62,7 +71,7 @@ const SignIn = () => {
               <h1 className="text-3xl font-bold gradient-text mb-2">Welcome Back</h1>
               <p className="text-gray-600">Sign in to continue the adventure!</p>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSignIn} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input

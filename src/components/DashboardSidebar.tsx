@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  Calendar, BookOpen, Pencil, Lightbulb, Gamepad,
+  Calendar, BookOpen, Moon, Lightbulb, Gamepad,
   Star, Award, Edit, Home, Menu, LogIn, X
 } from "lucide-react";
 
@@ -44,7 +44,7 @@ const DashboardSidebar = () => {
   const navItems = [
     { icon: <Home size={20} />, label: "Dashboard", to: "/dashboard" },
     { icon: <Calendar size={20} />, label: "Daily Activities", to: "/dashboard/daily-activities" },
-    { icon: <Pencil size={20} />, label: "Drawing Prompts", to: "/dashboard/drawing-prompts" },
+    { icon: <Moon size={20} />, label: "Bedtime Story Mixer", to: "/dashboard/bedtime-stories" },
     { icon: <BookOpen size={20} />, label: "Story Time", to: "/dashboard/stories" },
     { icon: <Lightbulb size={20} />, label: "Brain Games", to: "/dashboard/games" },
     { icon: <Gamepad size={20} />, label: "Offline Games", to: "/dashboard/offline-games" },

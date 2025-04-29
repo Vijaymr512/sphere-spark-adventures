@@ -1,10 +1,12 @@
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { Button } from "@/components/ui/button";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Volume2, Pause } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Stories = () => {
+  const { toast } = useToast();
   const [currentStory, setCurrentStory] = useState({
     title: "The Magical Garden",
     content: `Once upon a time, there was a little girl named Lily who discovered a hidden garden behind her new house. 
@@ -67,9 +69,82 @@ const Stories = () => {
     }
   ];
 
+  const [isPlaying, setIsPlaying] = useState(false);
+  const speechSynthRef = useRef<SpeechSynthesisUtterance | null>(null);
+
   const loadNewStory = () => {
+    // Stop any current narration when loading a new story
+    if (isPlaying) {
+      stopSpeech();
+    }
+    
     const randomIndex = Math.floor(Math.random() * stories.length);
     setCurrentStory(stories[randomIndex]);
+  };
+
+  const startSpeech = () => {
+    if ('speechSynthesis' in window) {
+      // Cancel any ongoing speech
+      window.speechSynthesis.cancel();
+      
+      // Create a new speech synthesis utterance
+      const utterance = new SpeechSynthesisUtterance(currentStory.content);
+      utterance.rate = 0.9; // Slightly slower for better comprehension
+      utterance.pitch = 1.1; // Slightly higher pitch for a friendlier voice
+      
+      // Get available voices and try to select a good one
+      const voices = window.speechSynthesis.getVoices();
+      const preferredVoice = voices.find(voice => 
+        voice.name.includes('Google') && voice.name.includes('US English') && voice.name.includes('Female')
+      ) || voices.find(voice => 
+        voice.name.includes('Female') && voice.name.includes('US')
+      );
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+      
+      // Add end event to update UI when speech ends
+      utterance.onend = () => {
+        setIsPlaying(false);
+        speechSynthRef.current = null;
+        
+        toast({
+          title: "Story ended",
+          description: "The narration has finished.",
+        });
+      };
+      
+      // Store reference and play
+      speechSynthRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
+      setIsPlaying(true);
+      
+      toast({
+        title: "Story Time",
+        description: "Story narration has started!",
+      });
+    } else {
+      toast({
+        title: "Not supported",
+        description: "Speech synthesis is not supported in your browser.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const stopSpeech = () => {
+    window.speechSynthesis.cancel();
+    setIsPlaying(false);
+    speechSynthRef.current = null;
+  };
+
+  const toggleSpeech = () => {
+    if (isPlaying) {
+      stopSpeech();
+    } else {
+      startSpeech();
+    }
   };
 
   return (
@@ -99,12 +174,29 @@ const Stories = () => {
               </div>
             </div>
             
-            <div className="text-center">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button 
                 onClick={loadNewStory}
-                className="px-8 py-2 text-lg bg-kidz-primary hover:bg-kidz-dark"
+                className="px-6 py-2 text-lg bg-kidz-primary hover:bg-kidz-dark"
               >
                 Read Another Story
+              </Button>
+              
+              <Button
+                onClick={toggleSpeech}
+                className={`px-6 py-2 text-lg ${isPlaying ? "bg-amber-500 hover:bg-amber-600" : "bg-kidz-secondary hover:bg-kidz-accent"}`}
+              >
+                {isPlaying ? (
+                  <>
+                    <Pause className="mr-2 h-5 w-5" />
+                    Stop Narration
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="mr-2 h-5 w-5" />
+                    Read Aloud
+                  </>
+                )}
               </Button>
             </div>
           </div>

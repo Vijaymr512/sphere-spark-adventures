@@ -1,9 +1,9 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { Button } from "@/components/ui/button";
-import { Calendar, Check } from "lucide-react";
+import { Calendar, Check, Bell } from "lucide-react";
 
 const DailyActivities = () => {
   const { toast } = useToast();
@@ -15,14 +15,54 @@ const DailyActivities = () => {
     "Practice writing a letter to your future self.",
     "Build a tower using only items from your recycling bin."
   ]);
+  const [userEmail, setUserEmail] = useState<string>("");
+
+  // Load user email when component mounts
+  useEffect(() => {
+    const email = localStorage.getItem("userEmail") || "";
+    setUserEmail(email);
+  }, []);
 
   const completeActivity = (activity: string) => {
     if (!completedActivities.includes(activity)) {
       setCompletedActivities([...completedActivities, activity]);
+      
+      // Show regular completion toast
       toast({
         title: "Great job! Activity completed! 🌟",
         description: "You've earned a star for your achievement chart!",
       });
+      
+      // Simulate sending email notification by showing a toast
+      // In a real app with backend, this would call an API
+      if (userEmail) {
+        setTimeout(() => {
+          toast({
+            title: "Notification Sent ✉️",
+            description: `An email was sent to ${userEmail} about completing: "${activity.substring(0, 30)}..."`,
+            variant: "default",
+          });
+        }, 1000);
+        
+        // Log the activity with email for demonstration
+        const activityLog = {
+          email: userEmail,
+          activity: activity,
+          completed: new Date().toISOString()
+        };
+        console.log("Activity completed:", activityLog);
+        
+        // Store in localStorage for demonstration
+        const logs = JSON.parse(localStorage.getItem("activityLogs") || "[]");
+        logs.push(activityLog);
+        localStorage.setItem("activityLogs", JSON.stringify(logs));
+      } else {
+        toast({
+          title: "No Email Found",
+          description: "We couldn't send a notification as no email address was found.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -35,6 +75,12 @@ const DailyActivities = () => {
           <header className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Daily Activities</h1>
             <p className="text-gray-600">Fun and educational activities for today!</p>
+            {userEmail && (
+              <div className="mt-2 flex items-center text-sm text-gray-500">
+                <Bell className="mr-1 h-4 w-4" />
+                Notifications will be sent to: {userEmail}
+              </div>
+            )}
           </header>
 
           <div className="grid gap-6">
