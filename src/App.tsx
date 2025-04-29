@@ -19,6 +19,7 @@ import OfflineGames from "./pages/OfflineGames";
 import Adventures from "./pages/Adventures";
 import Projects from "./pages/Projects";
 import EarlyLearning from "./pages/EarlyLearning";
+import TextToImage from "./pages/TextToImage";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
           <Route path="/dashboard/adventures" element={<Adventures />} />
           <Route path="/dashboard/projects" element={<Projects />} />
           <Route path="/dashboard/early-learning" element={<EarlyLearning />} />
+          <Route path="/dashboard/text-to-image" element={<TextToImage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

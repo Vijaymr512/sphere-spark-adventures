@@ -6,7 +6,7 @@ import ActivityCard from "@/components/ActivityCard";
 import { Button } from "@/components/ui/button";
 import { 
   Calendar, BookOpen, Lightbulb, Gamepad,
-  Star, Award, Edit, Check, Moon
+  Star, Award, Edit, Check, Moon, Image
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -63,6 +63,13 @@ const Dashboard = () => {
       description: "Exciting games to play away from screens with friends and family.",
       color: "bg-gradient-to-br from-white to-amber-50",
       link: "/dashboard/offline-games"
+    },
+    {
+      icon: <Image className="h-6 w-6 text-kidz-dark" />,
+      title: "Text to Image",
+      description: "Turn your words into pictures with our magical image creator!",
+      color: "bg-gradient-to-br from-white to-amber-50",
+      link: "/dashboard/text-to-image"
     },
     {
       icon: <Star className="h-6 w-6 text-kidz-dark" />,

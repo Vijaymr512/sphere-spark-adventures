@@ -1,7 +1,7 @@
 
 import { 
   BookOpen, Calendar, Star, Lightbulb, 
-  Gamepad, Award, Edit, Moon 
+  Gamepad, Award, Edit, Moon, Image 
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -42,6 +42,12 @@ const features = [
     title: "Offline Games",
     description: "Ideas for screen-free play that encourage physical activity and social skills.",
     path: "/dashboard/offline-games"
+  },
+  {
+    icon: <Image className="h-8 w-8 text-kidz-primary" />,
+    title: "Text to Image",
+    description: "Turn words into pictures with our magical image creator tool!",
+    path: "/dashboard/text-to-image"
   },
   {
     icon: <Star className="h-8 w-8 text-kidz-primary" />,

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Calendar, BookOpen, Moon, Lightbulb, Gamepad,
-  Star, Award, Edit, Home, Menu, LogIn, X
+  Star, Award, Edit, Home, Menu, LogIn, X, Image
 } from "lucide-react";
 
 interface NavItemProps {
@@ -48,6 +48,7 @@ const DashboardSidebar = () => {
     { icon: <BookOpen size={20} />, label: "Story Time", to: "/dashboard/stories" },
     { icon: <Lightbulb size={20} />, label: "Brain Games", to: "/dashboard/games" },
     { icon: <Gamepad size={20} />, label: "Offline Games", to: "/dashboard/offline-games" },
+    { icon: <Image size={20} />, label: "Text to Image", to: "/dashboard/text-to-image" },
     { icon: <Star size={20} />, label: "Roleplay Adventures", to: "/dashboard/adventures" },
     { icon: <Award size={20} />, label: "DIY Projects", to: "/dashboard/projects" },
     { icon: <Edit size={20} />, label: "ABC & 123", to: "/dashboard/early-learning" },
